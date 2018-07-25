@@ -35,6 +35,16 @@ function wc_auto_seo_custom_tab_panel() {
         );
         woocommerce_wp_text_input( $field );
       ?>
+      <?php  
+        $field = array(
+            'id' => '_wc_auto_seo_google_suggestion_keyword_string',
+            'label' => __( 'Suggestion by Google', 'textdomain' ),
+            'custom_attributes' => array(
+                'readonly' => 'readonly',
+            ) 
+        );
+        woocommerce_wp_text_input( $field );
+      ?>
     </div>
   </div>
 <?php
@@ -50,6 +60,13 @@ function wc_auto_seo_custom_fields_save($post_id)
     if (!empty($wc_auto_seo_keyword)){
         update_post_meta($post_id, '_wc_auto_seo_keyword', esc_attr($wc_auto_seo_keyword));
     }
+
+    $string = getQueryString($_POST['_wc_auto_seo_keyword']);
+    $meta_keyword_string = rtrim($string,", ");
+
+    if (!empty($meta_keyword_string)){
+        update_post_meta($post_id, '_wc_auto_seo_google_suggestion_keyword_string', esc_attr($meta_keyword_string));
+    }
 }
 
 //Add google Suggestion as meta kewyord to head tag 
@@ -57,18 +74,12 @@ add_action('wp_head','wc_auto_seo_keywords_in_head');
 
 function wc_auto_seo_keywords_in_head(){
     global $post;
-    $string = '';
+    $wc_auto_seo_keyword = '';
     if(is_product())
     {
-        $wc_auto_seo_keyword = get_post_meta($post->ID, '_wc_auto_seo_keyword', true);
-        $slug = basename($_SERVER['REQUEST_URI']);
-        $array = explode(".",$slug);
-        $slug = preg_replace('/-+/', ' ', $array[0]);		    
+        $wc_auto_seo_keyword = get_post_meta($post->ID, '_wc_auto_seo_google_suggestion_keyword_string', true);
 
-        $string = getQueryString($wc_auto_seo_keyword);
-        $meta_keyword_string = rtrim($string,", ");
-
-        echo '<meta name="keywords" content="'.$meta_keyword_string.'"/>'."\r\n";
+        echo '<meta name="keywords" content="'.html_entity_decode($wc_auto_seo_keyword).'"/>'."\r\n";
     }
 }
 
